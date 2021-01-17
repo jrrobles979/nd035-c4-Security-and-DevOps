@@ -2,15 +2,19 @@ package com.example.demo.controllers;
 
 import java.util.Optional;
 
+import com.example.demo.model.requests.LoginUserRequest;
+import com.example.demo.security.MyUserDetailsService;
+import com.example.demo.security.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.model.persistence.Cart;
 import com.example.demo.model.persistence.User;
@@ -27,6 +31,16 @@ public class UserController {
 	
 	@Autowired
 	private CartRepository cartRepository;
+
+	@Autowired
+	private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+	@Autowired
+	private AuthenticationManager authenticationManager;
+
+	@Autowired
+	private MyUserDetailsService myUserDetailsService;
+
 
 	@GetMapping("/id/{id}")
 	public ResponseEntity<User> findById(@PathVariable Long id) {
@@ -46,8 +60,42 @@ public class UserController {
 		Cart cart = new Cart();
 		cartRepository.save(cart);
 		user.setCart(cart);
+
+		if (  createUserRequest.getPassword().length()<7 && !createUserRequest.getPassword().equalsIgnoreCase(createUserRequest.getConfirmPassword()) ){
+			System.out.println ("Invalid password for user:  " + createUserRequest.getUsername());
+			return ResponseEntity.badRequest().build();
+		}
+		user.setPassword(  bCryptPasswordEncoder.encode( createUserRequest.getPassword()));
+
 		userRepository.save(user);
 		return ResponseEntity.ok(user);
 	}
-	
+
+
+	@PostMapping("/login")
+	public ResponseEntity login(@RequestBody LoginUserRequest loginUserRequest) {
+
+		try {
+		 Authentication authentication = authenticationManager.authenticate(
+					new UsernamePasswordAuthenticationToken(
+							loginUserRequest.getUsername(),
+							loginUserRequest.getPassword()
+					)
+			);
+		System.out.println("hello");
+		} catch (BadCredentialsException e) {
+			return ResponseEntity
+					.status(HttpStatus.FORBIDDEN)
+					.body(SecurityUtil.INVALID_CREDENTIALS);
+		}
+
+		//final UserDetails userDetails = myUserDetailsService.loadUserByUsername(loginUserRequest.getUsername());
+		//User user = userRepository.findByUsername(userDetails.getUsername());
+		return ResponseEntity.ok("");
+	}
+
+
+
+
+
 }
