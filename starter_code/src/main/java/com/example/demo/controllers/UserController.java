@@ -35,11 +35,11 @@ public class UserController {
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-	@Autowired
-	private AuthenticationManager authenticationManager;
+	//@Autowired
+	//private AuthenticationManager authenticationManager;
 
-	@Autowired
-	private MyUserDetailsService myUserDetailsService;
+	//@Autowired
+	//private MyUserDetailsService myUserDetailsService;
 
 
 	@GetMapping("/id/{id}")
@@ -58,7 +58,7 @@ public class UserController {
 		User user = new User();
 		user.setUsername(createUserRequest.getUsername());
 		Cart cart = new Cart();
-		cartRepository.save(cart);
+		Cart cartSaved = cartRepository.save(cart);
 		user.setCart(cart);
 
 		if (  createUserRequest.getPassword().length()<7 && !createUserRequest.getPassword().equalsIgnoreCase(createUserRequest.getConfirmPassword()) ){
@@ -67,12 +67,12 @@ public class UserController {
 		}
 		user.setPassword(  bCryptPasswordEncoder.encode( createUserRequest.getPassword()));
 
-		userRepository.save(user);
+		User userSaved = userRepository.save(user);
 		return ResponseEntity.ok(user);
 	}
 
 
-	@PostMapping("/login")
+	/*@PostMapping("/login")
 	public ResponseEntity login(@RequestBody LoginUserRequest loginUserRequest) {
 
 		try {
@@ -82,7 +82,7 @@ public class UserController {
 							loginUserRequest.getPassword()
 					)
 			);
-		System.out.println("hello");
+
 		} catch (BadCredentialsException e) {
 			return ResponseEntity
 					.status(HttpStatus.FORBIDDEN)
@@ -92,7 +92,7 @@ public class UserController {
 		//final UserDetails userDetails = myUserDetailsService.loadUserByUsername(loginUserRequest.getUsername());
 		//User user = userRepository.findByUsername(userDetails.getUsername());
 		return ResponseEntity.ok("");
-	}
+	}*/
 
 
 
