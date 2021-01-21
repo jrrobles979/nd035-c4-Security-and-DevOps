@@ -2,6 +2,8 @@ package com.example.demo.controllers;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +22,7 @@ import com.example.demo.model.persistence.repositories.UserRepository;
 @RestController
 @RequestMapping("/api/order")
 public class OrderController {
-	
+	public static final Logger log = LogManager.getLogger(OrderController.class);
 	
 	@Autowired
 	private UserRepository userRepository;
@@ -33,10 +35,12 @@ public class OrderController {
 	public ResponseEntity<UserOrder> submit(@PathVariable String username) {
 		User user = userRepository.findByUsername(username);
 		if(user == null) {
+			log.error("User '{}' not found" , username);
 			return ResponseEntity.notFound().build();
 		}
 		UserOrder order = UserOrder.createFromCart(user.getCart());
 		orderRepository.save(order);
+		log.info("Order {} with total of {} has been submited to {}" , order.getId() , order.getTotal(),  order.getUser().getUsername());
 		return ResponseEntity.ok(order);
 	}
 	
@@ -44,8 +48,10 @@ public class OrderController {
 	public ResponseEntity<List<UserOrder>> getOrdersForUser(@PathVariable String username) {
 		User user = userRepository.findByUsername(username);
 		if(user == null) {
+			log.error("User '{}' not found" , username);
 			return ResponseEntity.notFound().build();
 		}
+		log.info("User {} orders history requested", username );
 		return ResponseEntity.ok(orderRepository.findByUser(user));
 	}
 }

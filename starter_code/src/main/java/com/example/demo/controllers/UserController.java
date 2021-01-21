@@ -1,18 +1,10 @@
 package com.example.demo.controllers;
 
-import java.util.Optional;
-
-import com.example.demo.model.requests.LoginUserRequest;
-import com.example.demo.security.MyUserDetailsService;
-import com.example.demo.security.SecurityUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +17,7 @@ import com.example.demo.model.requests.CreateUserRequest;
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
+	public static final Logger log = LogManager.getLogger(UserController.class);
 	
 	@Autowired
 	private UserRepository userRepository;
@@ -62,12 +55,25 @@ public class UserController {
 		user.setCart(cart);
 
 		if (  createUserRequest.getPassword().length()<7 && !createUserRequest.getPassword().equalsIgnoreCase(createUserRequest.getConfirmPassword()) ){
-			System.out.println ("Invalid password for user:  " + createUserRequest.getUsername());
+			log.error("Invalid password for user:  " + createUserRequest.getUsername());
 			return ResponseEntity.badRequest().build();
 		}
 		user.setPassword(  bCryptPasswordEncoder.encode( createUserRequest.getPassword()));
 
+		/*User userSaved = null ;
+		try {
+			 userSaved = userRepository.save(user);
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+		if(userSaved == null){
+			log.error("Error creating user: '{}'" , createUserRequest.getUsername());
+			return ResponseEntity.status(HttpStatus.CONFLICT).build();
+		}*/
+
 		User userSaved = userRepository.save(user);
+		log.info("User created:" + user.getUsername());
 		return ResponseEntity.ok(user);
 	}
 

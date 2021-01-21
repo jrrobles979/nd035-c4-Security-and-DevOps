@@ -16,9 +16,11 @@ import com.example.demo.model.requests.CreateUserRequest;
 import com.example.demo.model.requests.ModifyCartRequest;
 import org.hibernate.criterion.Order;
 import org.junit.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -29,6 +31,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TestRestController {
+
+    @Autowired
+    private MockMvc mvc;
 
     private UserController userController;
     private CartController cartController;
@@ -86,6 +91,7 @@ public class TestRestController {
     }
 
 
+
     @Test
     public void verify_createUser(){
         System.out.println("verify_createUser");
@@ -95,12 +101,14 @@ public class TestRestController {
         request.setUsername(userToCreate.getUsername());
         request.setPassword(userToCreate.getPassword());
         request.setConfirmPassword(userToCreate.getPassword());
+
         ResponseEntity<User> response = userController.createUser(request);
         Assert.assertNotNull(response);
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         User userCreated = response.getBody();
         Assert.assertEquals( userToCreate.getUsername(), userCreated.getUsername() );
         Assert.assertEquals( Helper.ENCODED_PASSWORD, userCreated.getPassword() );
+
     }
 
 
@@ -220,8 +228,8 @@ public class TestRestController {
         cartItemRemoved.setItems(userCart.getItems());
         cartItemRemoved.setTotal(userCart.getTotal());
 
-        cartItemRemoved.getItems().remove(itemToRemove);
-        cartItemRemoved.setTotal(cartItemRemoved.getTotal().subtract(itemToRemove.getPrice()));
+        cartItemRemoved.removeItem(itemToRemove);
+
         Optional<Item> optionalItem = Optional.of(itemToRemove);
         when( userRepository.findByUsername(  request.getUsername()  )).thenReturn(user);
         when( itemRepository.findById(  request.getItemId()  )).thenReturn(optionalItem);
