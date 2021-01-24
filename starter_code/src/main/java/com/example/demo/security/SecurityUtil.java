@@ -7,7 +7,7 @@ public class SecurityUtil {
     public static final String createUser="/api/user/create";
     public static final String TOKEN_BEARER = "Bearer ";
     public static final String INVALID_CREDENTIALS = "Wrong username and password";
-    public static final int SESSION_EXPIRATION_TIME = 10*60*60;
+    public static final int SESSION_EXPIRATION_TIME = 10*60*60*1000; //
     public static final String HEADER_AUTH_KEY= "Authorization";
 
 

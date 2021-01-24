@@ -54,7 +54,7 @@ public class UserController {
 		Cart cartSaved = cartRepository.save(cart);
 		user.setCart(cart);
 
-		if (  createUserRequest.getPassword().length()<7 && !createUserRequest.getPassword().equalsIgnoreCase(createUserRequest.getConfirmPassword()) ){
+		if (  createUserRequest.getPassword().length()<7 || !createUserRequest.getPassword().equalsIgnoreCase(createUserRequest.getConfirmPassword()) ){
 			log.error("Invalid password for user:  " + createUserRequest.getUsername());
 			return ResponseEntity.badRequest().build();
 		}
